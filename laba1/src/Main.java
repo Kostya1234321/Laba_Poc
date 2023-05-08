@@ -1,24 +1,23 @@
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.io.File;
 
 public class Main {
     public static void main(String[] args) {
-        int n = 11;
-        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> fibonacci(n));
-        System.out.println("Started computing Fibonacci(" + n + ")");
-        try {
-            int result = future.get();
-            System.out.println("Result: " + result);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+        File currentDir = new File(".");
+        printDirectoryTree(currentDir, 0);
     }
 
-    private static int fibonacci(int n) {
-        if (n < 2) {
-            return n;
-        } else {
-            return fibonacci(n - 1) + fibonacci(n - 2);
+    public static void printDirectoryTree(File folder, int indent) {
+        for (int i = 0; i < indent; i++) {
+            System.out.print("\t");
+        }
+        System.out.println(folder.getName());
+        if (folder.isDirectory()) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    printDirectoryTree(file, indent + 1);
+                }
+            }
         }
     }
 }
