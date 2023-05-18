@@ -1,56 +1,42 @@
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Main {
     private static volatile int counter = 0;
 
     public static void main(String[] args) {
-        Thread t1 = new Thread(() -> {
-            while (counter < 240) {
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                counter++;
-                writeToFile("Thread 1", counter);
-            }
-        });
+        Thread thread1 = createThread("Thread 1", 250);
+        Thread thread2 = createThread("Thread 2", 500);
+        Thread thread3 = createThread("Thread 3", 1000);
 
-        Thread t2 = new Thread(() -> {
-            while (counter < 240) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                writeToFile("Thread 2", counter);
-            }
-        });
-
-        Thread t3 = new Thread(() -> {
-            while (counter < 240) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                writeToFile("Thread 3", counter);
-            }
-        });
-
-        t1.start();
-        t2.start();
-        t3.start();
+        thread1.start();
+        thread2.start();
+        thread3.start();
     }
 
-    private static synchronized void writeToFile(String threadName, int counter) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt", true))) {
-            writer.write(String.format("%s: %s, Counter: %d\n", threadName, LocalTime.now(), counter));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private static Thread createThread(String threadName, int delay) {
+        return new Thread(() -> {
+            try {
+                FileWriter writer = new FileWriter("output.txt", true);
+                while (counter < 240) {
+                    counter++;
+                    String currentTime = getCurrentTime();
+                    writer.write(threadName + " | " + currentTime + " | Counter: " + counter + "\n");
+                    writer.flush();
+                    Thread.sleep(delay);
+                }
+                writer.close();
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private static String getCurrentTime() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        return currentTime.format(formatter);
     }
 }
